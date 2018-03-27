@@ -12,6 +12,13 @@ public class TaskToDo {
 	private String Description;
 
 	
+	@Override
+	public String toString() {
+		return "TaskToDo [isChecked=" + isChecked + ", dueDate=" + dueDate + ", title=" + title + ", completion="
+				+ completion + ", Description=" + Description + "]";
+	}
+
+
 	public TaskToDo()
 	{
 		super();

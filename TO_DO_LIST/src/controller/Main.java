@@ -1,24 +1,40 @@
 package controller;
 	
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import model.TaskToDo;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
@@ -28,9 +44,14 @@ import javafx.scene.text.Text;
 
 
 public class Main extends Application {
-	@FXML
+	//@FXML
 	private Stage MainWindow;
-	private TableView<TaskToDo> table;
+	public TableView<TaskToDo> table;
+	public ObservableList<TaskToDo> tableList;
+	public List<TaskToDo> backupList=new LinkedList<TaskToDo>();
+	TaskToDo passedTask;
+	MainController mainController;
+	String filePath="";
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -38,19 +59,14 @@ public class Main extends Application {
 			VBox root = new VBox(20);
 			root.setPadding(new Insets(5,10,10,5));
 			Scene scene = new Scene(root,660,450);
+			MainWindow.setTitle("TO DO LIST");
 			
-			VBox fileBox = new VBox();
-			TextField fileField = new TextField(); 
-			fileBox.getChildren().add(fileField);
-			fileField.setDisable(true);
-			//fileField.s
-			
+			VBox fileBox = CreateFileBox();
 			root.getChildren().add(fileBox);
+//			tableList=LoadData(filePath);			
+//			backupList=LoadData(filePath);
 			
-			//scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			
-			//FileChooser fileChooser = new FileChooser();
-			//File file = fileChooser.showOpenDialog(MainWindow);
+
 			
 			RadioButton btnFilterAll=new RadioButton("All");
 			RadioButton btnFilterOverdue=new RadioButton("Overdue");
@@ -68,26 +84,46 @@ public class Main extends Application {
 			
 			filterGroup.selectToggle(btnFilterAll);
 			
-			/*
-			myToggleGroup.selectedToggleProperty().addListener(
-					(ov,odlToggle,newToggle)->{
-					System.out.println("Radio button toggled");
-					if(myButton.isSelected()){
-						System.out.println("NEW button");
-					}else{
-						System.out.println("BUTTON BUTTON");				
-					}
-					}		
-					);
-			*/
+
+			filterGroup.selectedToggleProperty().addListener(
+					(ov,oldToggle,newToggle)->{
+						try {
+							refresh();
+							if(btnFilterAll.isSelected()){
+								System.out.println("AllFilter");
+								FilterTable(0);
+								refresh();
+							}else if(btnFilterOverdue.isSelected()){
+								System.out.println("OverdueFilter");
+								FilterTable(1);
+								refresh();
+							}else if(btnFilterToday.isSelected()){
+								System.out.println("TodayFilter");
+								this.FilterTable(2);
+								refresh();
+							}else if(btnFilterThisWeek.isSelected()){
+								System.out.println("ThisWeekFilter");
+								this.FilterTable(3);
+								refresh();
+							}else if(btnFilterNotCompleted.isSelected()){
+								System.out.println("NotCompletedFilter");
+								this.FilterTable(4);
+								refresh();
+							}
+						}catch(ParseException e)
+						{
+							
+						}
+		
+					});
+			
 			
 			HBox filterBox=new HBox(20);
 			filterBox.getChildren().addAll(btnFilterAll,btnFilterOverdue,btnFilterToday,btnFilterThisWeek,btnFilterNotCompleted);
 			filterBox.setAlignment(Pos.CENTER);
 			root.getChildren().add(filterBox);
 			
-			table=ConfigureTableView();
-			
+			table=ConfigureTableView(tableList);		
 			
 			Button btnAdd=new Button("Add");
 			btnAdd.setMinWidth(150);
@@ -102,6 +138,25 @@ public class Main extends Application {
 			buttonBox.setAlignment(Pos.CENTER);
 			
 			
+			btnAdd.setOnAction(
+					event->{
+						try{
+				            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddEditView.fxml"));
+				            Parent root1 = (Parent) fxmlLoader.load();
+				            Stage stage = new Stage();
+//				            mainController = new MainController();				            
+//				            mainController.changeTask(new TaskToDo());
+//				            mainController.addController.initialize(mainController);
+				            stage.initModality(Modality.APPLICATION_MODAL);
+				            stage.initStyle(StageStyle.UNDECORATED);
+				            stage.setTitle("Add/Eddit");
+//				            stage.initOwner(MainWindow);
+				            stage.setScene(new Scene(root1));  
+				            stage.show();
+				          }
+						 catch (IOException e) {
+							//e.printStackTrace();
+						 }});
 
 			
 			
@@ -120,26 +175,41 @@ public class Main extends Application {
 		launch(args);
 	}
 	
-	public ObservableList<TaskToDo> LoadData()
+	public ObservableList<TaskToDo> LoadData(String path)
 	{
 		ObservableList<TaskToDo> tasks = FXCollections.observableArrayList();
-		tasks.add(new TaskToDo("2018-03-29", "END", 25, "OK easy", false));
-		tasks.add(new TaskToDo("2018-03-32", "FF", 15, "OK easy", false));
-		tasks.add(new TaskToDo("2018-03-29", "END", 25, "OK easy", true));
-		tasks.add(new TaskToDo("2018-03-32", "FF", 15, "OK easy", false));
-		
+	    String line = "";
+	    String cvsSplitBy = ",";
+	    
+	    if(!path.endsWith(".txt"))
+	    {
+	    	System.out.println("InvalidFile");
+	    	return tasks;    
+	    }
+
+	        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+
+	            while ((line = br.readLine()) != null) {
+	                String[] task = line.split(cvsSplitBy);
+	                tasks.add(new TaskToDo(task[0],task[1], Integer.parseInt(task[2]), task[3], Boolean.parseBoolean(task[4])));
+	            }
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            System.out.println("InvalidFile");
+	        }
 		return tasks;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public TableView<TaskToDo> ConfigureTableView()
+	public TableView<TaskToDo> ConfigureTableView(ObservableList<TaskToDo> tableList)
 	{
 		TableView<TaskToDo> table=new TableView<>();
 		
 		TableColumn<TaskToDo,CheckBox> CheckColumn = new TableColumn<>("[]");
 		CheckColumn.setMinWidth(40);
 		CheckColumn.setCellValueFactory(new PropertyValueFactory<>("isChecked"));
-
+		CheckColumn.editableProperty();
 		
 		TableColumn<TaskToDo,String> DueDateColumn = new TableColumn<>("DueDate");
 		DueDateColumn.setMinWidth(100);
@@ -159,13 +229,145 @@ public class Main extends Application {
 		DescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 		
 		
-		table.setItems(LoadData());
 		table.getColumns().addAll(CheckColumn,DueDateColumn,TitleColumn,CompletionColumn,DescriptionColumn);
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		table.setMaxHeight(600);
-		
+		table.setStyle("-fx-focus-color: transparent;");
 		return table;
 	}
+	void refresh()
+	{
+		table.setItems(tableList);
+		table.refresh();
+	}
 	
+	public VBox CreateFileBox()
+	{		
+		VBox fileBox = new VBox();
+		Button fileSelectButton = new Button();
+		fileSelectButton.setPrefWidth(660);
+		fileBox.getChildren().add(fileSelectButton);	
+		fileSelectButton.setOnAction(
+				event->{
+					FileChooser fileChooser = new FileChooser();
+					File file = fileChooser.showOpenDialog(MainWindow);
+					if(file!=null)
+					{
+						//filename path
+						System.out.println(file.getAbsolutePath());
+						fileSelectButton.setText(file.getAbsolutePath());
+						filePath=file.getAbsolutePath();
+						tableList=(LoadData(filePath));
+						backupList.addAll((LoadData(filePath)));
+						refresh();
+					}
+				});
+		return fileBox;
+	}
+	
+	
+	
+	
+	
+	
+
+	public void FilterTable(int filterType) throws ParseException
+	{
+		//0-all,1-overdue,2-today,3-this week 4-not completed
+		String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+		if(filterType==0)
+		{
+			tableList.clear();
+			tableList.addAll(backupList);	
+		}else if(filterType==1)
+		{
+			List<TaskToDo> temp = new LinkedList<TaskToDo>();
+			if(backupList!=null)
+			{
+				backupList.forEach(s->{
+					if(s.getDueDate().compareTo(currentDate)>0)
+					{
+						System.out.println(s.getDueDate());
+					}else
+						temp.add(s);
+				});
+				tableList.clear();
+				tableList.addAll(temp);
+			}
+	
+		}else if(filterType==2)
+		{
+			List<TaskToDo> temp = new LinkedList<TaskToDo>();
+			if(backupList!=null)
+			{
+				backupList.forEach(s->{
+					if(s.getDueDate().compareTo(currentDate)==0)
+					{
+						temp.add(s);
+						
+					}else
+						System.out.println(s.getDueDate());
+				});
+				tableList.clear();
+				tableList.addAll(temp);
+			}
+			
+			
+		}else if(filterType==3)
+		{
+			
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			Calendar cal = Calendar.getInstance();
+			Date curDate = df.parse(currentDate);
+			cal.setTime(curDate);
+			int curWeek = cal.get(Calendar.WEEK_OF_YEAR);
+
+			
+			
+			List<TaskToDo> temp = new LinkedList<TaskToDo>();
+			if(backupList!=null)
+			{
+				backupList.forEach(s->{
+					Date date = null;
+					try {
+						date = df.parse(s.getDueDate());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					cal.setTime(date);
+					int week = cal.get(Calendar.WEEK_OF_YEAR);
+					if(curWeek==week)
+					{
+						temp.add(s);
+						
+					}else
+						System.out.println(s.getDueDate());
+				});
+				tableList.clear();
+				tableList.addAll(temp);
+			}
+			
+			
+			
+		}else if(filterType==4)
+		{
+			List<TaskToDo> temp = new LinkedList<TaskToDo>();
+			if(backupList!=null)
+			{
+				backupList.forEach(s->{
+					if(s.getIsChecked().isSelected()==false)
+					{
+						temp.add(s);
+						
+					}else
+						System.out.println(s.getDueDate());
+				});
+				tableList.clear();
+				tableList.addAll(temp);
+			}
+			
+		}
+
+	}
 	
 }
