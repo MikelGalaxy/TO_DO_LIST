@@ -6,7 +6,7 @@ import javafx.scene.control.CheckBox;
 public class TaskToDo {
 
 	private CheckBox isChecked;
-	private  String dueDate;
+	private String dueDate;
 	private String title;
 	private int completion;
 	private String Description;
@@ -29,8 +29,7 @@ public class TaskToDo {
 		completion=0;
 		Description="";
 	}
-	
-	
+		
 	public TaskToDo(String dueDate, String title, int completion, String description, boolean checkBoxValue) {
 		super();
 		this.setIsChecked(new CheckBox());
@@ -40,18 +39,7 @@ public class TaskToDo {
 		this.completion = completion;
 		Description = description;
 
-	}
-	
-	public TaskToDo(String title) {
-		super();
-		setIsChecked(new CheckBox());
-		isChecked.setSelected(false);
-		dueDate="";
-		this.title = title;
-		completion=0;
-		Description="";
-
-	}
+	}	
 	
 	public String getDueDate() {
 		return dueDate;
@@ -77,13 +65,9 @@ public class TaskToDo {
 	public void setDescription(String description) {
 		Description = description;
 	}
-
-
 	public CheckBox getIsChecked() {
 		return isChecked;
 	}
-
-
 	public void setIsChecked(CheckBox isChecked) {
 		this.isChecked = isChecked;
 	}

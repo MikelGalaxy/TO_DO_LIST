@@ -47,9 +47,8 @@ import javafx.scene.text.Text;
 
 
 public class Main extends Application implements ITaskSaved {
-	//@FXML
 	private Stage MainWindow;
-	public TableView<TaskToDo> table;
+	private TableView<TaskToDo> table;
 	private ObservableList<TaskToDo> tableList;
 	private List<TaskToDo> backupList=new LinkedList<TaskToDo>();
 	TaskToDo passedTask;
@@ -118,7 +117,6 @@ public class Main extends Application implements ITaskSaved {
 		
 					});
 			
-			
 			HBox filterBox=new HBox(20);
 			filterBox.getChildren().addAll(btnFilterAll,btnFilterOverdue,btnFilterToday,btnFilterThisWeek,btnFilterNotCompleted);
 			filterBox.setAlignment(Pos.CENTER);
@@ -172,8 +170,7 @@ public class Main extends Application implements ITaskSaved {
 			VBox buttonBox = new VBox(20);
 			buttonBox.getChildren().add(btnAdd);
 			buttonBox.setAlignment(Pos.CENTER);
-			
-			
+						
 			btnAdd.setOnAction(
 					event->{
 						try{
@@ -192,7 +189,6 @@ public class Main extends Application implements ITaskSaved {
 						 catch (IOException e) {
 							//e.printStackTrace();
 						 }});
-
 
 			root.getChildren().add(tableBox);
 			root.getChildren().add(buttonBox);
@@ -241,25 +237,28 @@ public class Main extends Application implements ITaskSaved {
 		TableView<TaskToDo> table=new TableView<>();
 		
 		TableColumn<TaskToDo,CheckBox> CheckColumn = new TableColumn<>("\u2611");
-		CheckColumn.setMinWidth(40);
+		CheckColumn.setMinWidth(35);
+		CheckColumn.setMaxWidth(40);
 		CheckColumn.setCellValueFactory(new PropertyValueFactory<>("isChecked"));
 		CheckColumn.editableProperty();
 		
 		TableColumn<TaskToDo,String> DueDateColumn = new TableColumn<>("DueDate");
-		DueDateColumn.setMinWidth(80);
+		DueDateColumn.setMinWidth(60);
+		DueDateColumn.setStyle("-fx-alignment: CENTER");
 		DueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
 		
 		TableColumn<TaskToDo,String> TitleColumn = new TableColumn<>("Title");
-		TitleColumn.setMinWidth(100);
+		TitleColumn.setMinWidth(120);
 		TitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 		
 		TableColumn<TaskToDo,Integer> CompletionColumn = new TableColumn<>("Completion %");
 		CompletionColumn.setMinWidth(70);
+		CompletionColumn.setStyle("-fx-alignment: CENTER");
 		CompletionColumn.setCellValueFactory(new PropertyValueFactory<>("completion"));
 
 		
 		TableColumn<TaskToDo,String> DescriptionColumn = new TableColumn<>("Description");
-		DescriptionColumn.setMinWidth(130);
+		DescriptionColumn.setMinWidth(150);
 		DescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 		
 		
