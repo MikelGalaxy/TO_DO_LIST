@@ -44,7 +44,7 @@
                   <DatePicker fx:id="dDueDate" GridPane.columnIndex="1" />
                   <TextField fx:id="txtTitle" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <Slider fx:id="sCompletion" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextArea prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <TextArea fx:id="areaDescription" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                </children>
                <padding>
                   <Insets left="10.0" right="10.0" top="10.0" />

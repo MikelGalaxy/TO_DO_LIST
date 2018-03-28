@@ -14,6 +14,7 @@ import java.util.List;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -36,6 +37,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -43,7 +46,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 
-public class Main extends Application {
+public class Main extends Application implements ITaskSaved {
 	//@FXML
 	private Stage MainWindow;
 	public TableView<TaskToDo> table;
@@ -52,6 +55,7 @@ public class Main extends Application {
 	TaskToDo passedTask;
 	MainController mainController;
 	String filePath="";
+	 public AddTaskControler addControler;
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -63,9 +67,6 @@ public class Main extends Application {
 			
 			VBox fileBox = CreateFileBox();
 			root.getChildren().add(fileBox);
-//			tableList=LoadData(filePath);			
-//			backupList=LoadData(filePath);
-			
 
 			
 			RadioButton btnFilterAll=new RadioButton("All");
@@ -128,8 +129,39 @@ public class Main extends Application {
 			Button btnAdd=new Button("Add");
 			btnAdd.setMinWidth(150);
 			btnAdd.setMinHeight(50);
-
 			
+            Main tempStore = this;
+			
+			table.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			    @Override
+			    public void handle(MouseEvent mouseEvent) {
+			    	System.out.println();
+			        if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+			            if(mouseEvent.getClickCount() == 2){
+			               // System.out.println(table.getSelectionModel().getSelectedItem());	                
+			                refresh();
+			                //creation of new window
+			                try{
+					            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddEditView.fxml"));
+					            Parent root1 = (Parent) fxmlLoader.load();
+					            Stage stage = new Stage();
+					            addControler = fxmlLoader.<AddTaskControler>getController();
+					            addControler.setTask(table.getSelectionModel().getSelectedItem());
+					            addControler.setTaskListner(tempStore);
+					            stage.initModality(Modality.APPLICATION_MODAL);
+					            stage.initStyle(StageStyle.UNDECORATED);
+					            stage.setTitle("Add/Eddit");
+					            stage.setScene(new Scene(root1));  
+					            stage.show();
+					          }
+							 catch (IOException e) {
+								//e.printStackTrace();
+							 }              
+			            }
+			        }
+			    }
+			});
+		
 			VBox tableBox = new VBox(20);
 			tableBox.getChildren().add(table);
 			
@@ -144,13 +176,12 @@ public class Main extends Application {
 				            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddEditView.fxml"));
 				            Parent root1 = (Parent) fxmlLoader.load();
 				            Stage stage = new Stage();
-//				            mainController = new MainController();				            
-//				            mainController.changeTask(new TaskToDo());
-//				            mainController.addController.initialize(mainController);
+				            addControler = fxmlLoader.<AddTaskControler>getController();
+				            addControler.setTask(new TaskToDo("OKK"));
+				            addControler.setTaskListner(tempStore);
 				            stage.initModality(Modality.APPLICATION_MODAL);
 				            stage.initStyle(StageStyle.UNDECORATED);
 				            stage.setTitle("Add/Eddit");
-//				            stage.initOwner(MainWindow);
 				            stage.setScene(new Scene(root1));  
 				            stage.show();
 				          }
@@ -158,8 +189,7 @@ public class Main extends Application {
 							//e.printStackTrace();
 						 }});
 
-			
-			
+
 			root.getChildren().add(tableBox);
 			root.getChildren().add(buttonBox);
 			
@@ -233,6 +263,7 @@ public class Main extends Application {
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		table.setMaxHeight(600);
 		table.setStyle("-fx-focus-color: transparent;");
+		
 		return table;
 	}
 	void refresh()
@@ -246,7 +277,8 @@ public class Main extends Application {
 		VBox fileBox = new VBox();
 		Button fileSelectButton = new Button();
 		fileSelectButton.setPrefWidth(660);
-		fileBox.getChildren().add(fileSelectButton);	
+		fileBox.getChildren().add(fileSelectButton);
+		fileBox.setAlignment(Pos.CENTER);
 		fileSelectButton.setOnAction(
 				event->{
 					FileChooser fileChooser = new FileChooser();
@@ -265,67 +297,56 @@ public class Main extends Application {
 		return fileBox;
 	}
 	
-	
-	
-	
-	
-	
-
 	public void FilterTable(int filterType) throws ParseException
 	{
 		//0-all,1-overdue,2-today,3-this week 4-not completed
 		String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
 		if(filterType==0)
 		{
-			tableList.clear();
-			tableList.addAll(backupList);	
+			if(backupList.size()>0)
+			{
+				tableList.clear();
+				tableList.addAll(backupList);	
+			}
 		}else if(filterType==1)
 		{
 			List<TaskToDo> temp = new LinkedList<TaskToDo>();
-			if(backupList!=null)
+			if(backupList.size()>0)
 			{
 				backupList.forEach(s->{
 					if(s.getDueDate().compareTo(currentDate)>0)
 					{
-						System.out.println(s.getDueDate());
+//						System.out.println(s.getDueDate());
 					}else
 						temp.add(s);
 				});
 				tableList.clear();
 				tableList.addAll(temp);
 			}
-	
 		}else if(filterType==2)
 		{
 			List<TaskToDo> temp = new LinkedList<TaskToDo>();
-			if(backupList!=null)
+			if(backupList.size()>0)
 			{
 				backupList.forEach(s->{
 					if(s.getDueDate().compareTo(currentDate)==0)
 					{
 						temp.add(s);
-						
-					}else
-						System.out.println(s.getDueDate());
+					}
 				});
 				tableList.clear();
 				tableList.addAll(temp);
 			}
-			
-			
 		}else if(filterType==3)
 		{
-			
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar cal = Calendar.getInstance();
 			Date curDate = df.parse(currentDate);
 			cal.setTime(curDate);
 			int curWeek = cal.get(Calendar.WEEK_OF_YEAR);
 
-			
-			
 			List<TaskToDo> temp = new LinkedList<TaskToDo>();
-			if(backupList!=null)
+			if(backupList.size()>0)
 			{
 				backupList.forEach(s->{
 					Date date = null;
@@ -339,35 +360,42 @@ public class Main extends Application {
 					if(curWeek==week)
 					{
 						temp.add(s);
-						
-					}else
-						System.out.println(s.getDueDate());
+					}
 				});
 				tableList.clear();
 				tableList.addAll(temp);
 			}
-			
-			
-			
 		}else if(filterType==4)
 		{
 			List<TaskToDo> temp = new LinkedList<TaskToDo>();
-			if(backupList!=null)
+			if(backupList.size()>0)
 			{
 				backupList.forEach(s->{
 					if(s.getIsChecked().isSelected()==false)
 					{
 						temp.add(s);
-						
-					}else
-						System.out.println(s.getDueDate());
+					}
 				});
 				tableList.clear();
 				tableList.addAll(temp);
 			}
-			
 		}
-
 	}
+	
+	 @Override
+	    public void TaskSaved(Boolean add) {
+	        if(addControler.getTaskToDo()!=null)
+	        	System.out.println(addControler.getTaskToDo());
+	        if(add)
+	        {
+	        	tableList = FXCollections.observableArrayList();
+	        	if(addControler.getTaskToDo()!=null)
+	        	{
+	        		tableList.add(addControler.getTaskToDo());
+	        		backupList.add(addControler.getTaskToDo());
+	        	}	        	
+	        }	        	
+            refresh();
+	    }
 	
 }

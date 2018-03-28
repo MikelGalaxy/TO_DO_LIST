@@ -23,11 +23,11 @@ public class TaskToDo {
 	{
 		super();
 		setIsChecked(new CheckBox());
+		isChecked.setSelected(false);
 		dueDate=new SimpleStringProperty();
 		title="";
 		completion=0;
 		Description="";
-
 	}
 	
 	
@@ -42,7 +42,16 @@ public class TaskToDo {
 
 	}
 	
-	
+	public TaskToDo(String title) {
+		super();
+		setIsChecked(new CheckBox());
+		isChecked.setSelected(false);
+		dueDate=new SimpleStringProperty();
+		this.title = title;
+		completion=0;
+		Description="";
+
+	}
 	
 	public String getDueDate() {
 		return dueDate.get();
