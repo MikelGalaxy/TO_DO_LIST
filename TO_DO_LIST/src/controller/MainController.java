@@ -9,9 +9,7 @@ public class MainController {
 	public TaskToDo currentTask;
 	
 	
-//	public void initialize() {
-//		addController.initialize(this);
-//	}
+
 	public void changeTask(TaskToDo task)
 	{
 		currentTask=task;

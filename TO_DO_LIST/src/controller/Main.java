@@ -67,7 +67,7 @@ public class Main extends Application implements ITaskSaved {
 			
 			VBox fileBox = CreateFileBox();
 			root.getChildren().add(fileBox);
-
+			scene.getStylesheets().add("controller/application.css");
 			
 			RadioButton btnFilterAll=new RadioButton("All");
 			RadioButton btnFilterOverdue=new RadioButton("Overdue");
@@ -91,23 +91,23 @@ public class Main extends Application implements ITaskSaved {
 						try {
 							refresh();
 							if(btnFilterAll.isSelected()){
-								System.out.println("AllFilter");
+//								System.out.println("AllFilter");
 								FilterTable(0);
 								refresh();
 							}else if(btnFilterOverdue.isSelected()){
-								System.out.println("OverdueFilter");
+//								System.out.println("OverdueFilter");
 								FilterTable(1);
 								refresh();
 							}else if(btnFilterToday.isSelected()){
-								System.out.println("TodayFilter");
+//								System.out.println("TodayFilter");
 								this.FilterTable(2);
 								refresh();
 							}else if(btnFilterThisWeek.isSelected()){
-								System.out.println("ThisWeekFilter");
+//								System.out.println("ThisWeekFilter");
 								this.FilterTable(3);
 								refresh();
 							}else if(btnFilterNotCompleted.isSelected()){
-								System.out.println("NotCompletedFilter");
+//								System.out.println("NotCompletedFilter");
 								this.FilterTable(4);
 								refresh();
 							}
@@ -122,7 +122,11 @@ public class Main extends Application implements ITaskSaved {
 			HBox filterBox=new HBox(20);
 			filterBox.getChildren().addAll(btnFilterAll,btnFilterOverdue,btnFilterToday,btnFilterThisWeek,btnFilterNotCompleted);
 			filterBox.setAlignment(Pos.CENTER);
+			filterBox.setStyle("");
+			filterBox.getStyleClass().add("filterBox");
+			
 			root.getChildren().add(filterBox);
+			
 			
 			table=ConfigureTableView(tableList);		
 			
@@ -177,7 +181,7 @@ public class Main extends Application implements ITaskSaved {
 				            Parent root1 = (Parent) fxmlLoader.load();
 				            Stage stage = new Stage();
 				            addControler = fxmlLoader.<AddTaskControler>getController();
-				            addControler.setTask(new TaskToDo("OKK"));
+				            addControler.setTask(new TaskToDo());
 				            addControler.setTaskListner(tempStore);
 				            stage.initModality(Modality.APPLICATION_MODAL);
 				            stage.initStyle(StageStyle.UNDECORATED);
@@ -236,13 +240,13 @@ public class Main extends Application implements ITaskSaved {
 	{
 		TableView<TaskToDo> table=new TableView<>();
 		
-		TableColumn<TaskToDo,CheckBox> CheckColumn = new TableColumn<>("[]");
+		TableColumn<TaskToDo,CheckBox> CheckColumn = new TableColumn<>("\u2611");
 		CheckColumn.setMinWidth(40);
 		CheckColumn.setCellValueFactory(new PropertyValueFactory<>("isChecked"));
 		CheckColumn.editableProperty();
 		
 		TableColumn<TaskToDo,String> DueDateColumn = new TableColumn<>("DueDate");
-		DueDateColumn.setMinWidth(100);
+		DueDateColumn.setMinWidth(80);
 		DueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
 		
 		TableColumn<TaskToDo,String> TitleColumn = new TableColumn<>("Title");
@@ -250,19 +254,20 @@ public class Main extends Application implements ITaskSaved {
 		TitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 		
 		TableColumn<TaskToDo,Integer> CompletionColumn = new TableColumn<>("Completion %");
-		CompletionColumn.setMinWidth(60);
+		CompletionColumn.setMinWidth(70);
 		CompletionColumn.setCellValueFactory(new PropertyValueFactory<>("completion"));
 
 		
 		TableColumn<TaskToDo,String> DescriptionColumn = new TableColumn<>("Description");
-		DescriptionColumn.setMinWidth(120);
+		DescriptionColumn.setMinWidth(130);
 		DescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 		
 		
 		table.getColumns().addAll(CheckColumn,DueDateColumn,TitleColumn,CompletionColumn,DescriptionColumn);
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		table.setMaxHeight(600);
-		table.setStyle("-fx-focus-color: transparent;");
+		table.getStyleClass().add("table");
+		
 		
 		return table;
 	}
@@ -286,7 +291,7 @@ public class Main extends Application implements ITaskSaved {
 					if(file!=null)
 					{
 						//filename path
-						System.out.println(file.getAbsolutePath());
+//						System.out.println(file.getAbsolutePath());
 						fileSelectButton.setText(file.getAbsolutePath());
 						filePath=file.getAbsolutePath();
 						tableList=(LoadData(filePath));
@@ -385,10 +390,12 @@ public class Main extends Application implements ITaskSaved {
 	 @Override
 	    public void TaskSaved(Boolean add) {
 	        if(addControler.getTaskToDo()!=null)
-	        	System.out.println(addControler.getTaskToDo());
+	        {
+//	        	System.out.println(addControler.getTaskToDo());
 	        if(add)
 	        {
-	        	tableList = FXCollections.observableArrayList();
+	        	if(tableList==null)
+	        		tableList = FXCollections.observableArrayList();
 	        	if(addControler.getTaskToDo()!=null)
 	        	{
 	        		tableList.add(addControler.getTaskToDo());
@@ -396,6 +403,7 @@ public class Main extends Application implements ITaskSaved {
 	        	}	        	
 	        }	        	
             refresh();
+	        }
 	    }
 	
 }

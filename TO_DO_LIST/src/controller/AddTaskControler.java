@@ -1,5 +1,8 @@
 package controller;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -41,8 +44,7 @@ public class AddTaskControler {
 	public TaskToDo getTaskToDo()
 	{
 		return currentTask;
-	}
-	
+	}	
 
 	public void setTask(TaskToDo task)
 	{
@@ -52,20 +54,29 @@ public class AddTaskControler {
 		if(task!=null)
 		{
 			currentTask=task;
-			if(currentTask.getTitle()!=null)
+			if(currentTask.getTitle()!="")
 				txtTitle.setText(currentTask.getTitle());
 			if(currentTask.getDescription()!="")
 			{
 				areaDescription.setText(currentTask.getDescription());
 				isAdding=false;
+				btnSave.setText("Save");
 			}else
+			{
 				isAdding=true;
-				
-			
+				btnSave.setText("Add");
+			}
+
+			if(currentTask.getDueDate()!="")
+			{
+				 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				 LocalDate date = LocalDate.parse(currentTask.getDueDate(), formatter);
+				 dDueDate.setValue(date);				
+			}
 			sCompletion.setValue(currentTask.getCompletion());
-			
 		}
 	}
+	
 	public void setTaskListner(Main listner)
 	{
 		this.listner=listner;
@@ -77,6 +88,13 @@ public class AddTaskControler {
 			currentTask.setTitle(txtTitle.getText());
 		if(areaDescription.getText()!=null)
 			currentTask.setDescription(areaDescription.getText());
+		if(dDueDate.getValue()!=null)
+		{
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			String result = dDueDate.getValue().format(formatter);
+			currentTask.setDueDate(result);
+		}
+
 			
 		currentTask.setCompletion((int) sCompletion.getValue());
 		
@@ -84,11 +102,13 @@ public class AddTaskControler {
 			listner.TaskSaved(isAdding);
 		CloseWindow();
 	}
+	
 	public void CloseWindow()
 	{
 		 Stage stage = (Stage) btnClose.getScene().getWindow();
 		    stage.close();
 	}
+	
 	public void CancelWindow()
 	{
 		 Stage stage = (Stage) btnCancel.getScene().getWindow();
