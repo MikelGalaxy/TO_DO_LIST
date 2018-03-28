@@ -50,8 +50,8 @@ public class Main extends Application implements ITaskSaved {
 	//@FXML
 	private Stage MainWindow;
 	public TableView<TaskToDo> table;
-	public ObservableList<TaskToDo> tableList;
-	public List<TaskToDo> backupList=new LinkedList<TaskToDo>();
+	private ObservableList<TaskToDo> tableList;
+	private List<TaskToDo> backupList=new LinkedList<TaskToDo>();
 	TaskToDo passedTask;
 	MainController mainController;
 	String filePath="";
@@ -294,7 +294,12 @@ public class Main extends Application implements ITaskSaved {
 //						System.out.println(file.getAbsolutePath());
 						fileSelectButton.setText(file.getAbsolutePath());
 						filePath=file.getAbsolutePath();
-						tableList=(LoadData(filePath));
+						if(tableList!=null)
+						{
+							tableList.addAll(LoadData(filePath));
+						}
+						else
+							tableList=(LoadData(filePath));
 						backupList.addAll((LoadData(filePath)));
 						refresh();
 					}
