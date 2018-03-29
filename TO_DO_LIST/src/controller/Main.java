@@ -1,8 +1,10 @@
 package controller;
 	
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +22,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -54,7 +57,8 @@ public class Main extends Application implements ITaskSaved {
 	TaskToDo passedTask;
 	MainController mainController;
 	String filePath="";
-	 public AddTaskControler addControler;
+	public AddTaskControler addControler;
+	private Button fileSelectButton;
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -279,7 +283,7 @@ public class Main extends Application implements ITaskSaved {
 	public VBox CreateFileBox()
 	{		
 		VBox fileBox = new VBox();
-		Button fileSelectButton = new Button();
+		fileSelectButton = new Button();
 		fileSelectButton.setPrefWidth(660);
 		fileBox.getChildren().add(fileSelectButton);
 		fileBox.setAlignment(Pos.CENTER);
@@ -391,6 +395,75 @@ public class Main extends Application implements ITaskSaved {
 		}
 	}
 	
+	
+	public void SaveData(String path)
+	{		
+	    
+	    if(!path.endsWith(".txt"))
+	    {
+	    	System.out.println("InvalidFile");
+	    	return;    
+	    }
+	    if(tableList==null || tableList.size()<=0)
+	    {
+	    	return;  
+	    }
+
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+
+	        	tableList.forEach(s->{
+	        		String string = String.format("%s,%s,%d,%s,%s", s.getDueDate(), s.getTitle(),s.getCompletion(),s.getDescription(),s.getIsChecked().isSelected());
+	        		//"task[0],task[1], Integer.parseInt(task[2]), task[3], Boolean.parseString(task[4]
+	        		try {
+						writer.write(string);
+						writer.newLine();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}		        			
+	        	});
+	        	writer.close();
+	        	
+	        	
+//	            while ((line = br.readLine()) != null) {
+//	                String[] task = line.split(cvsSplitBy);
+//	                tasks.add(new TaskToDo(task[0],task[1], Integer.parseInt(task[2]), task[3], Boolean.parseBoolean(task[4])));
+//	            }
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            System.out.println("InvalidFile");
+	        }
+	}
+	
+	public void SaveTaskToDoList()
+	{
+		if(filePath=="")
+		{
+			FileChooser saveDirChoose = new FileChooser();
+			saveDirChoose.getExtensionFilters().add(
+					new ExtensionFilter("Text Files", "*.txt")
+					);
+			File newFileToSave =saveDirChoose.showSaveDialog(MainWindow);
+			filePath=newFileToSave.getAbsolutePath();
+			fileSelectButton.setText(filePath);
+			try {
+				newFileToSave.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("Failed to create file");
+				return;
+			}
+			SaveData(filePath);
+		}else
+		{
+			SaveData(filePath);		
+		}
+		
+		
+	}
+	
+	
 	 @Override
 	    public void TaskSaved(Boolean add) {
 	        if(addControler.getTaskToDo()!=null)
@@ -405,7 +478,8 @@ public class Main extends Application implements ITaskSaved {
 	        		tableList.add(addControler.getTaskToDo());
 	        		backupList.add(addControler.getTaskToDo());
 	        	}	        	
-	        }	        	
+	        }
+	        SaveTaskToDoList();
             refresh();
 	        }
 	    }
